@@ -6,7 +6,6 @@ import StarReview from "../Utils/StarReview";
 import CheckoutAndReview from "./CheckoutAndReview";
 import LatestReview from "./LatestReview";
 import { useOktaAuth } from "@okta/okta-react";
-import { error } from "console";
 import ReviewRequestModel from "../../models/ReviewRequestModel";
 
 const BookCheckoutPage = () => {
@@ -33,7 +32,7 @@ const BookCheckoutPage = () => {
   const [isCheckedOut, setIsCheckedOut] = useState(false);
   const [isLoadingBookCheckedOut, setIsLoadingBookCheckedOut] = useState(true);
 
-  const bookId = window.location.pathname.split("/")[2];
+  const bookId = (window.location.pathname).split("/")[2];
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -104,36 +103,36 @@ const BookCheckoutPage = () => {
     };
 
     fetchBookReviews().catch((error: any) => {
-      setIsLoading(false);
+      setIsLoadingReview(false);
       setHttpError(error.message);
     });
   }, [isReviewLeft]);
 
   useEffect(() => {
     const fetchUserReviewBook = async () => {
-        if (authState && authState.isAuthenticated) {
-            const url = `http://localhost:8081/api/reviews/secure/user/book/?bookId=${bookId}`;
-            const requestOptions = {
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${authState.accessToken?.accessToken}`,
-                    'Content-Type': 'application/json'
-                }
-            };
-            const userReview = await fetch(url, requestOptions);
-            if (!userReview.ok) {
-                throw new Error('Something went wrong');
-            }
-            const userReviewResponseJson = await userReview.json();
-            setIsReviewLeft(userReviewResponseJson);
+      if (authState && authState.isAuthenticated) {
+        const url = `http://localhost:8081/api/reviews/secure/user/book/?bookId=${bookId}`;
+        const requestOptions = {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${authState.accessToken?.accessToken}`,
+            "Content-Type": "application/json",
+          },
+        };
+        const userReview = await fetch(url, requestOptions);
+        if (!userReview.ok) {
+          throw new Error("Something went wrong");
         }
-        setIsLoadingUserReview(false);
-    }
+        const userReviewResponseJson = await userReview.json();
+        setIsReviewLeft(userReviewResponseJson);
+      }
+      setIsLoadingUserReview(false);
+    };
     fetchUserReviewBook().catch((error: any) => {
-        setIsLoadingUserReview(false);
-        setHttpError(error.message);
-    })
-}, [authState]);
+      setIsLoadingUserReview(false);
+      setHttpError(error.message);
+    });
+  }, [authState]);
 
   useEffect(() => {
     const fetchUserCurrentLoansCount = async () => {
@@ -160,7 +159,7 @@ const BookCheckoutPage = () => {
       setIsLoadingCurrentLoansCount(false);
       setHttpError(error.message);
     });
-  }, [authState]);
+  }, [authState, isCheckedOut]);
 
   useEffect(() => {
     const fetchUserCheckedOutBook = async () => {
@@ -194,7 +193,7 @@ const BookCheckoutPage = () => {
     isLoading ||
     isLoadingReview ||
     isLoadingCurrentLoansCount ||
-    isLoadingBookCheckedOut || 
+    isLoadingBookCheckedOut ||
     isLoadingUserReview
   ) {
     return <SpinnerLoading />;
@@ -225,25 +224,28 @@ const BookCheckoutPage = () => {
     setIsCheckedOut(true);
   }
 
-
-  async function submitReview(starInput: number, reviewDescription: string){
+  async function submitReview(starInput: number, reviewDescription: string) {
     let bookId: number = 0;
-    if(book?.id){
+    if (book?.id) {
       bookId = book.id;
     }
 
-    const reviewRequestModel = new ReviewRequestModel(starInput, bookId, reviewDescription);
+    const reviewRequestModel = new ReviewRequestModel(
+      starInput,
+      bookId,
+      reviewDescription
+    );
     const url = "http://localhost:8081/api/reviews/secure";
     const requestOptions = {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${authState?.accessToken?.accessToken}`,
-        'Content-Type': "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(reviewRequestModel)
+      body: JSON.stringify(reviewRequestModel),
     };
     const returnResponse = await fetch(url, requestOptions);
-    if(!returnResponse.ok){
+    if (!returnResponse.ok) {
       throw new Error("Something went wrong");
     }
     setIsReviewLeft(true);
