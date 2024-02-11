@@ -3,8 +3,10 @@ package com.hz.springbootlibrary.service;
 import com.hz.springbootlibrary.dao.BookRepository;
 import com.hz.springbootlibrary.dao.CheckoutRepository;
 
+import com.hz.springbootlibrary.dao.HistoryRepository;
 import com.hz.springbootlibrary.entity.Book;
 import com.hz.springbootlibrary.entity.Checkout;
+import com.hz.springbootlibrary.entity.History;
 import com.hz.springbootlibrary.responsemodels.ShelfCurrentLoansResponse;
 import org.hibernate.annotations.Check;
 import org.springframework.stereotype.Service;
@@ -22,13 +24,16 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Transactional
 public class BookService {
-    private final BookRepository bookRepository;
-    private final CheckoutRepository checkoutRepository;
+    private  BookRepository bookRepository;
+    private  CheckoutRepository checkoutRepository;
+
+    private HistoryRepository historyRepository;
 
     // Constructor dependency injection
-    public BookService(BookRepository bookRepository, CheckoutRepository checkoutRepository){
+    public BookService(BookRepository bookRepository, CheckoutRepository checkoutRepository, HistoryRepository historyRepository){
         this.bookRepository = bookRepository;
         this.checkoutRepository = checkoutRepository;
+        this.historyRepository = historyRepository;
     }
 
     public Book checkoutBook(String userEmail, Long bookId) throws Exception{
@@ -109,6 +114,16 @@ public class BookService {
         book.get().setCopiesAvailable(book.get().getCopiesAvailable() + 1);
         bookRepository.save(book.get());
         checkoutRepository.deleteById(validateCheckout.getId());
+
+        History history = new History(
+                userEmail, validateCheckout.getCheckoutDate(), LocalDate.now().toString(),
+                book.get().getTitle(),
+                book.get().getAuthor(),
+                book.get().getDescription(),
+                book.get().getImg()
+        );
+
+        historyRepository.save(history);
     }
 
     public void renewLoan(String userEmail, Long bookId) throws Exception{
@@ -127,6 +142,8 @@ public class BookService {
             checkoutRepository.save(validateCheckout);
         }
     }
+
+
 
 
 
