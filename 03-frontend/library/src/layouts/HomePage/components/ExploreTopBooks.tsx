@@ -13,7 +13,7 @@ const ExploreTopBooks = () => {
           <p className="col-md-8 fs-4">Where would like to go next?</p>
           <Link
             type="button"
-            className="btn main-color btn-lg text white"
+            className="btn main-color btn-lg text-white"
             to="/search"
           >
             Explore top books
